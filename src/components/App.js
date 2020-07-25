@@ -71,7 +71,6 @@ function App() {
         setCountry(countryCode);
         setCountryInfo(data);
         setMapZoom(4);
-        console.log(data.countryInfo);
         setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
       })
       .catch(err => console.error(err));
