@@ -10,24 +10,27 @@ import Map from './Map';
 import Table from './Table';
 import InfoBox from './InfoBox';
 import LineGraph from './LineGraph';
-import { sortData } from '../utils';
+import { sortData, prettyPrintStats } from '../utils';
 import 'leaflet/dist/leaflet.css';
 import './App.css';
 
 function App() {
-  const [countries, setCountries] = useState([]);
+  const [casesType, setCasesType] = useState('cases');
   const [country, setCountry] = useState('worldwide');
+  const [countries, setCountries] = useState([]);
   const [countryInfo, setCountryInfo] = useState({});
   const [tableData, setTableData] = useState([]);
-  const [mapCenter, setMapCenter] = useState({ lat: 34.80746, lng: -40.4796 });
+  const [mapCenter, setMapCenter] = useState([34.80746, -40.4796]);
   const [mapZoom, setMapZoom] = useState(3);
+  const [mapCountries, setMapCountries] = useState([]);
 
   useEffect(() => {
     fetch('https://disease.sh/v3/covid-19/all')
       .then(response => response.json())
       .then(data => {
         setCountryInfo(data);
-      });
+      })
+      .catch(err => console.error(err));
   }, []);
 
   useEffect(() => {
@@ -43,6 +46,7 @@ function App() {
           const sortedData = sortData(data);
           setTableData(sortedData);
           setCountries(countries);
+          setMapCountries(data);
         })
         .catch(err => {
           console.error(err);
@@ -52,7 +56,7 @@ function App() {
     getCountriesData();
   }, []);
 
-  const onCountryChange = async event => {
+  const onCountryChange = event => {
     const countryCode = event.target.value;
     setCountry(countryCode);
 
@@ -61,12 +65,16 @@ function App() {
         ? 'https://disease.sh/v3/covid-19/all'
         : `https://disease.sh/v3/covid-19/countries/${countryCode}`;
 
-    await fetch(url)
+    fetch(url)
       .then(response => response.json())
       .then(data => {
         setCountry(countryCode);
         setCountryInfo(data);
-      });
+        setMapZoom(4);
+        console.log(data.countryInfo);
+        setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
+      })
+      .catch(err => console.error(err));
   };
 
   return (
@@ -92,30 +100,43 @@ function App() {
 
         <div className="app__stats">
           <InfoBox
+            isRed
+            onClick={event => setCasesType('cases')}
+            active={casesType === 'cases'}
             title="Coronavirus Cases"
-            cases={countryInfo.todayCases}
-            total={countryInfo.cases}
+            cases={prettyPrintStats(countryInfo.todayCases)}
+            total={prettyPrintStats(countryInfo.cases)}
           />
           <InfoBox
+            onClick={event => setCasesType('recovered')}
+            active={casesType === 'recovered'}
             title="Recovered"
-            cases={countryInfo.todayRecovered}
-            total={countryInfo.recovered}
+            cases={prettyPrintStats(countryInfo.todayRecovered)}
+            total={prettyPrintStats(countryInfo.recovered)}
           />
           <InfoBox
+            isRed
+            active={casesType === 'deaths'}
+            onClick={event => setCasesType('deaths')}
             title="Deaths"
-            cases={countryInfo.todayDeaths}
-            total={countryInfo.deaths}
+            cases={prettyPrintStats(countryInfo.todayDeaths)}
+            total={prettyPrintStats(countryInfo.deaths)}
           />
         </div>
 
-        <Map center={mapCenter} zoom={mapZoom} />
+        <Map
+          casesType={casesType}
+          countries={mapCountries}
+          center={mapCenter}
+          zoom={mapZoom}
+        />
       </div>
       <Card className="app__right">
         <CardContent>
           <h3>Live Cases by Country</h3>
           <Table countries={tableData} />
-          <h3>Worldwide New Cases</h3>
-          <LineGraph />
+          <h3 className="app_graphTitle">Worldwide new {casesType}</h3>
+          <LineGraph className="app__lineGraph" casesType={casesType} />
         </CardContent>
       </Card>
     </div>

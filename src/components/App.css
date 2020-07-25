@@ -18,8 +18,36 @@ body {
   margin-bottom: 20px;
   justify-content: space-between;
 }
+.app__header > h1 {
+  color: #fc3c3c;
+  font-size: 2rem;
+}
+
+.app__dropdown {
+  background-color: white;
+}
+
 .app__left {
   flex: 0.9;
+}
+
+.app__right {
+  display: flex;
+  flex-direction: column;
+}
+
+.app__right .MuiCardContent-root {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.app__lineGraph {
+  flex-grow: 1;
+}
+
+.app_graphTitle {
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .app__stats {

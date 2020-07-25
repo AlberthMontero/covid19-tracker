@@ -46,12 +46,10 @@ const options = {
   }
 };
 
-//const buildChartData = (data, casesType = 'cases') => {
 const buildChartData = (data, casesType = 'cases') => {
   const chartData = [];
   let lastDataPoint;
 
-  //data[casesType].forEach(date => {
   for (let date in data[casesType]) {
     if (lastDataPoint) {
       let newDataPoint = {
@@ -66,7 +64,7 @@ const buildChartData = (data, casesType = 'cases') => {
   return chartData;
 };
 
-function LineGraph({ casesType = 'cases' }) {
+function LineGraph({ casesType = 'cases', ...props }) {
   const [data, setData] = useState({});
 
   useEffect(() => {
@@ -84,7 +82,7 @@ function LineGraph({ casesType = 'cases' }) {
   }, [casesType]);
 
   return (
-    <div className="linegraph">
+    <div className={props.className}>
       {data?.length > 0 && (
         <Line
           options={options}
